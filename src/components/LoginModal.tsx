@@ -24,13 +24,21 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginM
     setError(null);
     
     try {
-      const email = id.includes('@') ? id : `${id}@sangam.org`;
+      const trimmedId = id.trim();
+      const trimmedPassword = password.trim();
+      const email = trimmedId.includes('@') ? trimmedId : `${trimmedId}@sangam.org`;
+      
       const { data, error: loginError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password: trimmedPassword
       });
 
-      if (loginError) throw loginError;
+      if (loginError) {
+        if (loginError.message === 'Invalid login credentials') {
+          throw new Error('아이디 또는 비밀번호가 일치하지 않습니다.');
+        }
+        throw loginError;
+      }
 
       // The AuthContext will handle the user state update via onAuthStateChange
       onClose();

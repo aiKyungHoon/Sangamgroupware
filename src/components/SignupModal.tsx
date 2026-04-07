@@ -25,14 +25,17 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
     setError(null);
     
     try {
-      const email = id.includes('@') ? id : `${id}@sangam.org`;
+      const trimmedId = id.trim();
+      const trimmedPassword = password.trim();
+      const email = trimmedId.includes('@') ? trimmedId : `${trimmedId}@sangam.org`;
+      
       console.log('Attempting signup with:', email);
       const { data, error: signupError } = await supabase.auth.signUp({
         email,
-        password,
+        password: trimmedPassword,
         options: {
           data: {
-            full_name: name,
+            full_name: name.trim(),
             position: position,
             role: email.includes('admin') ? 'ADMIN' : 'USER'
           }
