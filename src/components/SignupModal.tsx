@@ -14,7 +14,8 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [position, setPosition] = useState('관리자');
+  const [position, setPosition] = useState('구역원');
+  const [district, setDistrict] = useState('1구역');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -37,12 +38,16 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
           data: {
             full_name: name.trim(),
             position: position,
+            district: district,
             role: email.includes('admin') ? 'ADMIN' : 'USER'
           }
         }
       });
 
       if (signupError) {
+        if (signupError.message === 'User already registered') {
+          throw new Error('이미 등록된 아이디입니다. 다른 아이디를 사용해 주세요.');
+        }
         console.error('Supabase Signup Error:', signupError);
         throw signupError;
       }
@@ -54,7 +59,9 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
         onClose();
       }, 2000);
     } catch (err: any) {
-      console.error('Caught Error during signup:', err);
+      if (err.message !== '이미 등록된 아이디입니다. 다른 아이디를 사용해 주세요.') {
+        console.error('Caught Error during signup:', err);
+      }
       setError(err.message || '회원가입 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
@@ -158,20 +165,36 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-700 ml-1">직분</label>
-                    <select
-                      value={position}
-                      onChange={(e) => setPosition(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                    >
-                      <option>관리자</option>
-                      <option>지역장</option>
-                      <option>임원</option>
-                      <option>기능팀장</option>
-                      <option>구역장</option>
-                      <option>양때팀장</option>
-                    </select>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-700 ml-1">직분</label>
+                      <select
+                        value={position}
+                        onChange={(e) => setPosition(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      >
+                        <option>관리자</option>
+                        <option>지역장</option>
+                        <option>임원</option>
+                        <option>기능팀장</option>
+                        <option>구역장</option>
+                        <option>양때팀장</option>
+                        <option>구역원</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-700 ml-1">구역</label>
+                      <select
+                        value={district}
+                        onChange={(e) => setDistrict(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      >
+                        {Array.from({ length: 20 }, (_, i) => (
+                          <option key={i + 1} value={`${i + 1}구역`}>{i + 1}구역</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   <button

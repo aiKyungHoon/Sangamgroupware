@@ -37,6 +37,9 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginM
         if (loginError.message === 'Invalid login credentials') {
           throw new Error('아이디 또는 비밀번호가 일치하지 않습니다.');
         }
+        if (loginError.message === 'Email not confirmed') {
+          throw new Error('이메일 인증이 완료되지 않았습니다. 이메일을 확인해 주세요.');
+        }
         throw loginError;
       }
 

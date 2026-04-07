@@ -28,15 +28,15 @@ export default function OrganizationChart() {
     }
   };
 
-  // Helper to get users by position
-  const getUsersByPosition = (position: string) => {
-    return profiles.filter(p => p.position === position);
+  // Helper to get users by position and optionally district
+  const getUsersByPosition = (position: string, district?: string) => {
+    return profiles.filter(p => p.position === position && (!district || p.district === district));
   };
 
   const teams = [
-    { name: '보라팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('규리'))?.full_name || '김규리', count: 50, color: 'purple', districts: ['1구역', '2구역', '3구역', '4구역', '5구역'] },
-    { name: '이음팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('주영'))?.full_name || '김주영a', count: 55, color: 'blue', districts: ['6구역', '7구역', '8구역', '9구역', '10구역'] },
-    { name: '해봄팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('반디'))?.full_name || '김반디', count: 45, color: 'amber', districts: ['11구역', '12구역', '13구역', '14구역', '15구역'] },
+    { name: '보라팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('규리'))?.full_name || '김규리', count: profiles.filter(p => ['1구역', '2구역', '3구역', '4구역', '5구역'].includes(p.district)).length || 50, color: 'purple', districts: ['1구역', '2구역', '3구역', '4구역', '5구역'] },
+    { name: '이음팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('주영'))?.full_name || '김주영a', count: profiles.filter(p => ['6구역', '7구역', '8구역', '9구역', '10구역'].includes(p.district)).length || 55, color: 'blue', districts: ['6구역', '7구역', '8구역', '9구역', '10구역'] },
+    { name: '해봄팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('반디'))?.full_name || '김반디', count: profiles.filter(p => ['11구역', '12구역', '13구역', '14구역', '15구역'].includes(p.district)).length || 45, color: 'amber', districts: ['11구역', '12구역', '13구역', '14구역', '15구역'] },
   ];
 
   if (isLoading) {
@@ -149,16 +149,38 @@ export default function OrganizationChart() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                {team.districts.map((district) => (
-                  <button key={district} className="w-full bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center hover:border-blue-200 hover:shadow-sm transition-all group">
-                    <span className="text-sm font-bold text-gray-700">{district}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-400 group-hover:text-blue-500">구역원 등록</span>
-                      <ArrowDown size={14} className="-rotate-90 text-gray-300 group-hover:text-blue-500" />
+              <div className="space-y-3">
+                {team.districts.map((district) => {
+                  const districtLeader = getUsersByPosition('구역장', district)[0]?.full_name;
+                  const members = getUsersByPosition('구역원', district);
+                  return (
+                    <div key={district} className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:border-blue-200 transition-all">
+                      <div className="p-3 flex justify-between items-center border-b border-gray-50 bg-gray-50/50">
+                        <span className="text-sm font-bold text-gray-900">{district}</span>
+                        {districtLeader ? (
+                          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                            구역장: {districtLeader}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-gray-400">구역장 미지정</span>
+                        )}
+                      </div>
+                      <div className="p-3 space-y-1.5">
+                        {members.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {members.map(member => (
+                              <span key={member.id} className="text-[11px] text-gray-600 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
+                                {member.full_name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-gray-400 italic">등록된 구역원이 없습니다.</p>
+                        )}
+                      </div>
                     </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
