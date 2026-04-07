@@ -1,24 +1,62 @@
-import React from 'react';
-import { Edit2, Users, ArrowDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Edit2, Users, ArrowDown, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 
-const teams = [
-  { name: '보라팀', leader: '김규리', count: 50, color: 'purple', districts: ['1구역', '2구역', '3구역', '4구역', '5구역'] },
-  { name: '이음팀', leader: '김주영a', count: 55, color: 'blue', districts: ['6구역', '7구역', '8구역', '9구역', '10구역'] },
-  { name: '해봄팀', leader: '김반디', count: 45, color: 'amber', districts: ['11구역', '12구역', '13구역', '14구역', '15구역'] },
-];
-
 export default function OrganizationChart() {
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProfiles();
+  }, []);
+
+  const fetchProfiles = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name', { ascending: true });
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (err) {
+      console.error('Error fetching profiles:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Helper to get users by position
+  const getUsersByPosition = (position: string) => {
+    return profiles.filter(p => p.position === position);
+  };
+
+  const teams = [
+    { name: '보라팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('규리'))?.full_name || '김규리', count: 50, color: 'purple', districts: ['1구역', '2구역', '3구역', '4구역', '5구역'] },
+    { name: '이음팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('주영'))?.full_name || '김주영a', count: 55, color: 'blue', districts: ['6구역', '7구역', '8구역', '9구역', '10구역'] },
+    { name: '해봄팀', leader: getUsersByPosition('팀장').find(p => p.full_name.includes('반디'))?.full_name || '김반디', count: 45, color: 'amber', districts: ['11구역', '12구역', '13구역', '14구역', '15구역'] },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-40">
+        <Loader2 className="animate-spin text-blue-600" size={48} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 pb-20">
       <div>
         <h2 className="text-2xl font-bold text-gray-900">상암 조직도</h2>
-        <p className="text-gray-500 mt-1">팀별/구역별 조직 구성 및 인원 현황 (총 150명)</p>
+        <p className="text-gray-500 mt-1">팀별/구역별 조직 구성 및 인원 현황 (총 {profiles.length}명)</p>
       </div>
 
       <div className="flex flex-col items-center gap-8">
         {/* Top Level */}
-        <div className="flex gap-12 items-start">
+        <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 w-64 relative">
             <div className="flex justify-between items-center mb-4">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">전도</span>
@@ -27,19 +65,19 @@ export default function OrganizationChart() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] text-gray-400">지역장</p>
-                <p className="text-sm font-bold text-gray-900">김하영</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('지역장')[0]?.full_name || '김하영'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">전도관</p>
-                <p className="text-sm font-bold text-gray-900">박다솔</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('전도관')[0]?.full_name || '박다솔'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">전도서기</p>
-                <p className="text-sm font-bold text-gray-900">김선우B</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('전도서기')[0]?.full_name || '김선우B'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">대외협력교관</p>
-                <p className="text-sm font-bold text-gray-900">양재준</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('대외협력교관')[0]?.full_name || '양재준'}</p>
               </div>
             </div>
           </div>
@@ -47,7 +85,7 @@ export default function OrganizationChart() {
           <div className="flex flex-col items-center">
             <div className="bg-[#334155] p-8 rounded-2xl shadow-lg w-48 text-center text-white">
               <p className="text-xs opacity-60 mb-1">임원</p>
-              <h3 className="text-2xl font-bold">한민지</h3>
+              <h3 className="text-2xl font-bold">{getUsersByPosition('임원')[0]?.full_name || '한민지'}</h3>
             </div>
             <ArrowDown className="text-gray-300 mt-4" size={32} />
           </div>
@@ -60,23 +98,23 @@ export default function OrganizationChart() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] text-gray-400">지역서기</p>
-                <p className="text-sm font-bold text-gray-900">복서경</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('지역서기')[0]?.full_name || '복서경'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">교육팀장</p>
-                <p className="text-sm font-bold text-gray-900">김성준</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('교육팀장')[0]?.full_name || '김성준'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">문화팀장</p>
-                <p className="text-sm font-bold text-gray-900">이여진</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('문화팀장')[0]?.full_name || '이여진'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">회계팀장</p>
-                <p className="text-sm font-bold text-gray-900">유승우</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('회계팀장')[0]?.full_name || '유승우'}</p>
               </div>
               <div>
                 <p className="text-[10px] text-gray-400">심방팀장</p>
-                <p className="text-sm font-bold text-gray-900">박미연</p>
+                <p className="text-sm font-bold text-gray-900">{getUsersByPosition('심방팀장')[0]?.full_name || '박미연'}</p>
               </div>
             </div>
           </div>

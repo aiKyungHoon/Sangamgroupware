@@ -9,7 +9,6 @@ import EducationManagement from './pages/EducationManagement';
 import EvangelismManagement from './pages/EvangelismManagement';
 import AccountingManagement from './pages/AccountingManagement';
 import VisitationManagement from './pages/VisitationManagement';
-import SupabaseTest from './components/SupabaseTest';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode, roles: string[] }) {
   const { user } = useAuth();
@@ -75,7 +74,6 @@ export default function App() {
     <AuthProvider>
       <Router>
         <AppRoutes />
-        <SupabaseTest />
       </Router>
     </AuthProvider>
   );

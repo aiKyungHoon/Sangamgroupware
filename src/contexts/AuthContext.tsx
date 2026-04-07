@@ -15,28 +15,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const fetchProfile = async (userId: string, email: string, metadata: any) => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (error && error.code === 'PGRST116') {
+          // Profile doesn't exist, create it from metadata
+          const newProfile = {
+            id: userId,
+            email: email,
+            full_name: metadata.full_name || email.split('@')[0],
+            position: metadata.position || '교구원',
+            role: metadata.role || 'USER',
+            updated_at: new Date().toISOString()
+          };
+          
+          const { data: createdProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert([newProfile])
+            .select()
+            .single();
+            
+          if (!insertError && createdProfile) {
+            setUser({
+              id: createdProfile.id,
+              name: createdProfile.full_name,
+              email: createdProfile.email,
+              role: createdProfile.role as UserRole,
+              position: createdProfile.position
+            });
+          }
+        } else if (data) {
+          setUser({
+            id: data.id,
+            name: data.full_name,
+            email: data.email,
+            role: data.role as UserRole,
+            position: data.position
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+      }
+    };
+
     // Check active sessions and subscribe to auth changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          role: session.user.user_metadata.role || 'USER',
-          position: session.user.user_metadata.position || '교구원'
-        });
+        fetchProfile(session.user.id, session.user.email || '', session.user.user_metadata);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          role: session.user.user_metadata.role || 'USER',
-          position: session.user.user_metadata.position || '교구원'
-        });
+        fetchProfile(session.user.id, session.user.email || '', session.user.user_metadata);
       } else {
         setUser(null);
       }

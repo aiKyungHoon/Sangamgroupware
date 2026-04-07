@@ -13,7 +13,7 @@ interface LoginModalProps {
 
 export default function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProps) {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +24,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginM
     setError(null);
     
     try {
+      const email = id.includes('@') ? id : `${id}@sangam.org`;
       const { data, error: loginError } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -84,15 +85,15 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginM
                   </div>
                 )}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">이메일 주소</label>
+                  <label className="text-sm font-bold text-gray-700 ml-1">아이디 (ID)</label>
                   <div className="relative">
-                    <Icons.Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Icons.User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
-                      type="email"
+                      type="text"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="example@sangam.org"
+                      value={id}
+                      onChange={(e) => setId(e.target.value)}
+                      placeholder="아이디 입력"
                       className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                     />
                   </div>
@@ -148,7 +149,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginM
             {/* Admin Hint */}
             <div className="bg-blue-50 p-4 text-center">
               <p className="text-[10px] text-blue-400 font-medium">
-                Tip: 이메일에 'admin'이 포함되면 관리자 권한으로 로그인됩니다.
+                Tip: 아이디에 'admin'이 포함되면 관리자 권한으로 로그인됩니다.
               </p>
             </div>
           </motion.div>

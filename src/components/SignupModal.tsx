@@ -11,10 +11,10 @@ interface SignupModalProps {
 }
 
 export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalProps) {
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [position, setPosition] = useState('교구원');
+  const [position, setPosition] = useState('관리자');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -25,6 +25,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
     setError(null);
     
     try {
+      const email = id.includes('@') ? id : `${id}@sangam.org`;
       console.log('Attempting signup with:', email);
       const { data, error: signupError } = await supabase.auth.signUp({
         email,
@@ -124,15 +125,15 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-gray-700 ml-1">이메일 주소</label>
+                    <label className="text-xs font-bold text-gray-700 ml-1">아이디 (ID)</label>
                     <div className="relative">
-                      <Icons.Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                      <Icons.User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                       <input
-                        type="email"
+                        type="text"
                         required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="example@sangam.org"
+                        value={id}
+                        onChange={(e) => setId(e.target.value)}
+                        placeholder="아이디 입력"
                         className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                       />
                     </div>
@@ -161,12 +162,12 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }: Signup
                       onChange={(e) => setPosition(e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                     >
-                      <option>교구원</option>
+                      <option>관리자</option>
+                      <option>지역장</option>
+                      <option>임원</option>
+                      <option>기능팀장</option>
                       <option>구역장</option>
-                      <option>팀장</option>
-                      <option>부장</option>
-                      <option>전도사</option>
-                      <option>목사</option>
+                      <option>양때팀장</option>
                     </select>
                   </div>
 
